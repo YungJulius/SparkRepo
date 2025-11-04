@@ -9,6 +9,7 @@ import SwiftUI
 
 struct StyleDemo: View {
     // Test comment to check Git
+    // Test Sangitha
     var body: some View {
         VStack {
             Image(systemName: "globe")
