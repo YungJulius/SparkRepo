@@ -10,13 +10,17 @@ import SwiftUI
 struct ContentView: View {
     // Test comment to check Git
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        NavigationStack {
+            List {
+                NavigationLink("Hello World", destination: HelloWorld())
+                NavigationLink("Styles", destination: StyleDemo())
+                NavigationLink("Location Trigger", destination: LocationTrigger())
+                NavigationLink("Weather Trigger", destination: WeatherTrigger())
+                NavigationLink("Emotion Trigger", destination: EmotionTrigger())
+                NavigationLink("Lock and Unlock Tracking", destination: LockAndUnlockTracking())
+            }
+            .navigationTitle("Menu")
         }
-        .padding()
     }
 }
 
