@@ -2,6 +2,8 @@ import SwiftUI
 
 // A skeleton starter code for this page was AI generated
 
+// A skeleton starter code for this page was AI generated
+
 // MARK: - Data Model
 struct Note: Identifiable, Codable {
     let id = UUID()

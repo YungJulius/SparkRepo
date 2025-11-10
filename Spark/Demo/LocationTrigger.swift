@@ -5,6 +5,8 @@
 //  Created by Julius  Jung on 03.11.2025.
 // Dania edit!
 
+// A skeleton starter code for this page was AI generated
+
 import SwiftUI
 import CoreLocation
 import Combine

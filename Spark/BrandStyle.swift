@@ -5,6 +5,8 @@
 //  Shared brand colors and fonts
 //
 
+// A skeleton starter code for this page was AI generated
+
 import SwiftUI
 
 // MARK: - Brand Colors
