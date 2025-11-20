@@ -9,9 +9,16 @@ import SwiftUI
 
 @main
 struct SparkApp: App {
+    
+    @StateObject private var env = AppEnvironment()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(env.locationService)
+                .environmentObject(env.weatherService)
+                .environmentObject(env.emotionService)
+                .environmentObject(env.storageService)
         }
     }
 }

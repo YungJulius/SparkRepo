@@ -10,22 +10,29 @@
 import SwiftUI
 
 struct ContentView: View {
-    // Test comment to check Git
     var body: some View {
-        NavigationStack {
-            List {
-                NavigationLink("Hello World", destination: HelloWorld())
-                NavigationLink("Styles", destination: StyleDemo())
-                NavigationLink("Local storage", destination: LocalStorage())
-                NavigationLink("Location Trigger", destination: LocationTrigger())
-                NavigationLink("Weather Trigger", destination: WeatherTrigger())
-                NavigationLink("Emotion Trigger", destination: EmotionTrigger())
-                NavigationLink("Lock and Unlock Tracking", destination: LockAndUnlockTracking())
-            }
-            .navigationTitle("Menu")
+        TabView {
+            HomeView()
+                .tabItem {
+                    Image(systemName: "house.fill")
+                    Text("Home")
+                }
+
+            CreateView()
+                .tabItem {
+                    Image(systemName: "plus.circle.fill")
+                    Text("Create")
+                }
+
+            SearchView()
+                .tabItem {
+                    Image(systemName: "magnifyingglass")
+                    Text("Search")
+                }
         }
     }
 }
+
 
 #Preview {
     ContentView()
