@@ -353,3 +353,7 @@ struct HomeView: View {
         .environmentObject(EmotionService.shared)
         .environmentObject(StorageService.shared)
 }
+
+#Preview {
+    HomeView()
+}
