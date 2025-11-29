@@ -26,8 +26,17 @@ final class UnlockService {
 
         if entry.unlockedAt != nil { return false }
 
+        // Check if time requirement has passed
         guard Date() >= entry.earliestUnlock else {
             return false
+        }
+
+        // Check if there are any conditions set
+        let hasConditions = entry.geofence != nil || entry.weather != nil || entry.emotion != nil
+        
+        // If no conditions are set and time has passed, unlock immediately
+        if !hasConditions {
+            return true
         }
 
         // geofence

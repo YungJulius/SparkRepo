@@ -3,9 +3,9 @@ import SwiftUI
 struct WeatherLockView: View {
     @EnvironmentObject var weatherService: WeatherService
 
-    let title: String
-    let content: String
-    let geofence: Geofence?
+    // Bind back to CreateView state
+    @Binding var geofence: Geofence?
+    @Binding var weather: Weather?
     @Binding var path: NavigationPath
 
     @State private var selectedWeather: Weather? = nil
@@ -61,6 +61,7 @@ struct WeatherLockView: View {
 
                 // Skip weather
                 Button {
+                    weather = nil
                     path.append("emotion")
                 } label: {
                     Text("Skip Weather")
@@ -74,6 +75,7 @@ struct WeatherLockView: View {
 
                 // Use weather
                 Button {
+                    weather = selectedWeather
                     path.append("emotion")
                 } label: {
                     Text("Use Weather")
@@ -87,20 +89,6 @@ struct WeatherLockView: View {
             }
         }
         .padding()
-        .navigationDestination(for: String.self) { screen in
-            switch screen {
-            case "emotion":
-                EmotionLockView(
-                    title: title,
-                    content: content,
-                    geofence: geofence,
-                    weather: selectedWeather,
-                    path: $path
-                )
-            default:
-                EmptyView()
-            }
-        }
     }
 
     // MARK: - Weather Options
@@ -171,9 +159,8 @@ struct WeatherIcon: View {
 #Preview {
     NavigationStack {
         WeatherLockView(
-            title: "Sample Title",
-            content: "Sample content for preview",
-            geofence: nil,
+            geofence: .constant(nil),
+            weather: .constant(nil),
             path: .constant(NavigationPath())
         )
         .environmentObject(WeatherService())

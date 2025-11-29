@@ -1,12 +1,8 @@
 import SwiftUI
 
 struct EmotionLockView: View {
-
-    let title: String
-    let content: String
-    let geofence: Geofence?
-    let weather: Weather?
-
+    // Bind back to CreateView state
+    @Binding var emotion: Emotion?
     @Binding var path: NavigationPath
 
     @State private var selectedEmotion: Emotion? = nil
@@ -61,6 +57,7 @@ struct EmotionLockView: View {
 
                 // Skip
                 Button {
+                    emotion = nil
                     path.append("unlock")
                 } label: {
                     Text("Skip Emotion")
@@ -74,16 +71,21 @@ struct EmotionLockView: View {
 
                 // Use
                 Button {
-                    path.append("unlock")
+                    if selectedEmotion != nil {
+                        print("🎭 EmotionLockView: Selected emotion = \(selectedEmotion!.rawValue)")
+                        emotion = selectedEmotion
+                        path.append("unlock")
+                    }
                 } label: {
                     Text("Use Emotion")
                         .font(BrandStyle.button)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(BrandStyle.accent)
+                        .background(selectedEmotion != nil ? BrandStyle.accent : Color.gray)
                         .cornerRadius(12)
                 }
+                .disabled(selectedEmotion == nil)
             }
         }
         .padding()
@@ -137,10 +139,7 @@ private struct EmotionRow: View {
 #Preview {
     NavigationStack {
         EmotionLockView(
-            title: "Sample Title",
-            content: "Sample content for preview",
-            geofence: nil,
-            weather: nil,
+            emotion: .constant(nil),
             path: .constant(NavigationPath())
         )
     }

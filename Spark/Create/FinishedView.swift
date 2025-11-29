@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct FinishedView: View {
-
+    @Environment(\.dismiss) var dismiss
     @Binding var path: NavigationPath
 
     var body: some View {
@@ -11,7 +11,7 @@ struct FinishedView: View {
 
             VStack(spacing: 32) {
 
-                Image(systemName: "lock.fill")
+                Image(systemName: "checkmark.circle.fill")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 90)
@@ -24,10 +24,16 @@ struct FinishedView: View {
                     .padding(.horizontal)
 
                 Button {
+                    // Reset the create flow
                     NotificationCenter.default.post(name: .resetCreateFlow, object: nil)
-                    path = NavigationPath()     // ← return to root
+                    // Pop all the way back to CreateView root
+                    while path.count > 0 {
+                        path.removeLast()
+                    }
+                    // Switch to Home tab
+                    NotificationCenter.default.post(name: .switchToHomeTab, object: nil)
                 } label: {
-                    Text("Return to Home")
+                    Text("Done")
                         .font(BrandStyle.button)
                         .foregroundColor(.black)
                         .frame(maxWidth: .infinity)
@@ -38,6 +44,7 @@ struct FinishedView: View {
                 .padding(.horizontal, 40)
             }
         }
+        .navigationBarBackButtonHidden(true)
     }
 }
 

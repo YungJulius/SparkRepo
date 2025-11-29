@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-enum Emotion: String, Codable, CaseIterable, Identifiable {
+enum Emotion: String, Codable, CaseIterable, Identifiable, Hashable {
     var id: String { rawValue }
 
     case happy

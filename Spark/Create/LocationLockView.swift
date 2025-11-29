@@ -12,16 +12,13 @@ struct MapPinItem: Identifiable {
 struct LocationLockView: View {
     @EnvironmentObject var location: LocationService
 
-    let title: String
-    let content: String
-
+    // Bind back to CreateView's geofence
+    @Binding var geofence: Geofence?
     @Binding var path: NavigationPath
 
     @State private var selectedCoordinate: CLLocationCoordinate2D?
     @State private var region = MKCoordinateRegion()
     @State private var showFullScreenMap = false
-
-    @State private var passedGeofence: Geofence? = nil
 
     var body: some View {
         VStack(spacing: 24) {
@@ -77,7 +74,7 @@ struct LocationLockView: View {
 
                 // Skip → go to weather
                 Button {
-                    passedGeofence = nil
+                    geofence = nil
                     path.append("weather")
                 } label: {
                     Text("Skip Location")
@@ -109,19 +106,6 @@ struct LocationLockView: View {
         .fullScreenCover(isPresented: $showFullScreenMap) {
             FullScreenLocationPicker(selectedCoordinate: $selectedCoordinate)
         }
-        .navigationDestination(for: String.self) { screen in
-            switch screen {
-            case "weather":
-                WeatherLockView(
-                    title: title,
-                    content: content,
-                    geofence: passedGeofence,
-                    path: $path
-                )
-            default:
-                EmptyView()
-            }
-        }
     }
 
     // MARK: - Map Pins
@@ -150,13 +134,13 @@ struct LocationLockView: View {
 
     private func confirmLocation() {
         if let coord = selectedCoordinate {
-            passedGeofence = Geofence(
+            geofence = Geofence(
                 latitude: coord.latitude,
                 longitude: coord.longitude,
                 radius: 150
             )
         } else {
-            passedGeofence = nil
+            geofence = nil
         }
     }
 }
@@ -315,8 +299,7 @@ final class SearchCompleterDelegate: NSObject, MKLocalSearchCompleterDelegate {
 #Preview {
     NavigationStack {
         LocationLockView(
-            title: "Sample Title",
-            content: "Sample content for preview",
+            geofence: .constant(nil),
             path: .constant(NavigationPath())
         )
         .environmentObject(LocationService())

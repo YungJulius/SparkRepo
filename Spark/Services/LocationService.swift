@@ -10,7 +10,7 @@ import CoreLocation
 import Combine
 
 
-struct Geofence: Codable {
+struct Geofence: Codable, Hashable {
     var id: UUID = UUID()
     let latitude: Double
     let longitude: Double

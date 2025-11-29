@@ -13,13 +13,8 @@ extension Color {
     static let brandDominant = Color("dominant")
     static let brandAccent = Color("accent")
     static let brandSecondary = Color("secondary")
-
-    static let brandBackground = Color("background")
     static let brandCard = Color("card")
-    static let brandTextPrimary = Color("textPrimary")
-    static let brandTextSecondary = Color("textSecondary")
 }
-
 
 enum SparkFont {
     static func ui(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
@@ -31,13 +26,38 @@ enum SparkFont {
 }
 
 enum BrandStyle {
-    static let background = Color.brandBackground
-    static let card = Color.brandCard
+    // Use asset colors if available, otherwise fallback to system colors
+    static var background: Color {
+        if UIColor(named: "background") != nil {
+            return Color("background")
+        }
+        return Color(uiColor: .systemBackground)
+    }
+    
+    static var card: Color {
+        if UIColor(named: "card") != nil {
+            return Color("card")
+        }
+        return Color.white
+    }
+    
     static let primary = Color.brandDominant
     static let accent = Color.brandAccent
     static let secondary = Color.brandSecondary
-    static let textPrimary = Color.brandTextPrimary
-    static let textSecondary = Color.brandTextSecondary
+    
+    static var textPrimary: Color {
+        if UIColor(named: "textPrimary") != nil {
+            return Color("textPrimary")
+        }
+        return Color.primary
+    }
+    
+    static var textSecondary: Color {
+        if UIColor(named: "textSecondary") != nil {
+            return Color("textSecondary")
+        }
+        return Color.secondary
+    }
 
     // Fonts
     static let title = SparkFont.ui(22, weight: .semibold)
@@ -49,4 +69,5 @@ enum BrandStyle {
 
 extension Notification.Name {
     static let resetCreateFlow = Notification.Name("resetCreateFlow")
+    static let switchToHomeTab = Notification.Name("switchToHomeTab")
 }

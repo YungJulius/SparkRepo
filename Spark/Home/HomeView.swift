@@ -20,6 +20,7 @@ struct HomeView: View {
     @State private var selectedEmotion: Emotion?
     @State private var currentWeather: Weather?
     @State private var placeName: String = "-"
+    @State private var selectedEntry: SparkEntry? = nil
     
     private var recentUnlocked: [SparkEntry] {
         storage.entries
@@ -30,61 +31,101 @@ struct HomeView: View {
     @State private var isRefreshing = false
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                VStack(alignment: .leading, spacing: 6) {
+        NavigationStack {
+            ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                // Header
+                VStack(alignment: .leading, spacing: 8) {
                     Text("Spark")
                         .font(BrandStyle.title)
                         .foregroundColor(BrandStyle.accent)
                     Text("Welcome Back")
                         .font(BrandStyle.sectionTitle)
-                        .foregroundColor(.black)
+                        .foregroundColor(BrandStyle.textPrimary)
                 }
-                SectionHeader("Mood Picker")
-                EmotionPicker(
-                    selected: selectedEmotion,
-                    onSelect: { setEmotion($0) }
-                )
-                SectionHeader("Status")
-                VStack(spacing: 12) {
-                    StatusCard(
-                        title: "Weather",
-                        subtitle: currentWeather?.rawValue.capitalized ?? "-",
-                        symbol: WeatherSymbol.symbol(for: currentWeather ?? .unknown)
-                    )
-                    StatusCard(
-                        title: "Location",
-                        subtitle: placeName,
-                        symbol: "mappin.and.ellipse"
-                    )
-                    RefreshCard(isLoading: isRefreshing) { refresh() }
-                }
+                .padding(.horizontal)
+                .padding(.top, 8)
                 
-                SectionHeader("Recently Unlocked")
-                VStack(spacing: 12) {
+                // Mood Picker Section
+                VStack(alignment: .leading, spacing: 12) {
+                    SectionHeader("Mood Picker")
+                    EmotionPicker(
+                        selected: selectedEmotion,
+                        onSelect: { setEmotion($0) }
+                    )
+                }
+                .padding(.horizontal)
+                
+                // Status Section
+                VStack(alignment: .leading, spacing: 12) {
+                    SectionHeader("Status")
+                    VStack(spacing: 12) {
+                        StatusCard(
+                            title: "Weather",
+                            subtitle: currentWeather?.rawValue.capitalized ?? "-",
+                            symbol: WeatherSymbol.symbol(for: currentWeather ?? .unknown)
+                        )
+                        StatusCard(
+                            title: "Location",
+                            subtitle: placeName,
+                            symbol: "mappin.and.ellipse"
+                        )
+                        RefreshCard(isLoading: isRefreshing) { refresh() }
+                    }
+                }
+                .padding(.horizontal)
+                
+                // Recently Unlocked Section
+                VStack(alignment: .leading, spacing: 12) {
+                    SectionHeader("Recently Unlocked")
                     if recentUnlocked.isEmpty {
-                        Text("No unlocked entries yet.")
-                            .font(BrandStyle.body)
-                            .foregroundColor(.black.opacity(0.6))
+                        EmptyStateView()
                     } else {
-                        ForEach(recentUnlocked.prefix(5), id: \.id) { entry in
-                            RecentEntryCard(entry: entry)
+                        VStack(spacing: 16) {
+                            ForEach(recentUnlocked.prefix(5), id: \.id) { entry in
+                                NoteCardView(entry: entry) {
+                                    // Recent unlocked entries are already unlocked, so safe to navigate
+                                    selectedEntry = entry
+                                }
+                            }
                         }
                     }
                 }
+                .padding(.horizontal)
+                .padding(.bottom, 20)
             }
-            .padding(20)
         }
-        .background(Color.white.ignoresSafeArea())
+        .background(
+            LinearGradient(
+                colors: [
+                    BrandStyle.primary.opacity(0.03),
+                    BrandStyle.background
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+        )
         .task { await load() }
         .onAppear { location.requestPermission() }
         .onReceive(location.$currentLocation.compactMap { $0 }) { loc in
-            Task { await updateForCoordinate(loc.coordinate) }
+            Task { 
+                await updateForCoordinate(loc.coordinate)
+                checkAndUnlockEntries()
+            }
         }
         .onReceive(weather.$lastWeather.compactMap { $0 }) { w in
             currentWeather = w
+            checkAndUnlockEntries()
         }
-        .refreshable { await load() }
+        .onReceive(emotion.$currentEmotion) { _ in
+            checkAndUnlockEntries()
+        }
+            .refreshable { await load() }
+            .navigationDestination(item: $selectedEntry) { entry in
+                NoteDetailView(entry: entry)
+            }
+        }
     }
     
     private func refresh() {
@@ -119,7 +160,34 @@ struct HomeView: View {
         }
         
         storage.load()
+        checkAndUnlockEntries()
         isRefreshing = false
+    }
+    
+    private func checkAndUnlockEntries() {
+        // Get unlock service from environment
+        let unlockService = UnlockService(
+            location: location,
+            weather: weather,
+            emotion: emotion
+        )
+        
+        // Check each locked entry
+        for entry in storage.entries where entry.isLocked {
+            let shouldUnlock = unlockService.shouldUnlock(entry)
+            print("🔓 Checking entry '\(entry.title)': shouldUnlock=\(shouldUnlock)")
+            print("  Entry emotion: \(entry.emotion?.rawValue ?? "NIL")")
+            print("  Current emotion: \(emotion.currentEmotion?.rawValue ?? "NIL")")
+            print("  Entry weather: \(entry.weather?.rawValue ?? "NIL")")
+            print("  Current weather: \(weather.lastWeather?.rawValue ?? "NIL")")
+            
+            if shouldUnlock {
+                print("  ✅ Unlocking entry!")
+                var unlockedEntry = entry
+                unlockedEntry.unlockedAt = Date()
+                storage.update(unlockedEntry)
+            }
+        }
     }
     
     @MainActor
@@ -138,43 +206,51 @@ struct HomeView: View {
         Text(text)
             .font(BrandStyle.sectionTitle)
             .foregroundColor(BrandStyle.accent)
+            .padding(.bottom, 4)
     }
     
     private struct EmotionPicker: View {
         let selected: Emotion?
         let onSelect: (Emotion?) -> Void
         
-        private let columns = [GridItem(.flexible()), GridItem(.flexible())]
+        private let columns = [
+            GridItem(.flexible(), spacing: 10),
+            GridItem(.flexible(), spacing: 10),
+            GridItem(.flexible(), spacing: 10)
+        ]
         
         var body: some View {
-            LazyVGrid(columns: columns, spacing: 12) {
-                ForEach(Emotion.allCases, id: \.self) { emo in
-                    EmotionChip(
-                        emotion: emo,
-                        isSelected: selected == emo,
-                        onTap: { onSelect(emo) }
-                    )
-                }
-                HStack {
-                    Spacer()
-                    Button { onSelect(nil) } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: "xmark.circle")
-                                .font(.system(size: 16, weight: .regular))
-                            Text("Clear")
-                                .font(BrandStyle.button)
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 10)
-                        .background(BrandStyle.accent.opacity(0.12))
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(BrandStyle.accent, lineWidth: 1))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .foregroundColor(.black)
+            VStack(spacing: 12) {
+                LazyVGrid(columns: columns, spacing: 10) {
+                    ForEach(Emotion.allCases, id: \.self) { emo in
+                        EmotionChip(
+                            emotion: emo,
+                            isSelected: selected == emo,
+                            onTap: { onSelect(emo) }
+                        )
                     }
-                    .buttonStyle(.plain)
-                    Spacer()
                 }
-                .gridCellColumns(2)
+                
+                // Clear button
+                Button { onSelect(nil) } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "xmark.circle")
+                            .font(.system(size: 16, weight: .medium))
+                        Text("Clear Selection")
+                            .font(BrandStyle.caption)
+                            .fontWeight(.medium)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(BrandStyle.secondary.opacity(0.15))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(BrandStyle.secondary.opacity(0.3), lineWidth: 1)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .foregroundColor(BrandStyle.secondary)
+                }
+                .buttonStyle(.plain)
             }
         }
     }
@@ -186,22 +262,46 @@ struct HomeView: View {
         
         var body: some View {
             Button(action: onTap) {
-                HStack(spacing: 8) {
+                VStack(spacing: 6) {
                     Image(systemName: iconName)
-                        .font(.system(size: 16, weight: .regular))
+                        .font(.system(size: 20, weight: .medium))
                     Text(emotion.rawValue.capitalized)
                         .font(BrandStyle.caption)
+                        .fontWeight(.medium)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(isSelected ? BrandStyle.accent.opacity(0.18)
-                            :BrandStyle.accent.opacity(0.10))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 8)
+                .background(
+                    isSelected
+                        ? LinearGradient(
+                            colors: [BrandStyle.accent, BrandStyle.accent.opacity(0.8)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                        : LinearGradient(
+                            colors: [BrandStyle.accent.opacity(0.12), BrandStyle.accent.opacity(0.08)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                )
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(isSelected ? BrandStyle.accent : BrandStyle.accent.opacity(0.6), lineWidth: 1)
+                        .stroke(
+                            isSelected ? BrandStyle.accent.opacity(0.3) : BrandStyle.accent.opacity(0.2),
+                            lineWidth: isSelected ? 1.5 : 1
+                        )
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 12))
-                .foregroundColor(.black)
+                .foregroundColor(isSelected ? .white : BrandStyle.textPrimary)
+                .shadow(
+                    color: isSelected ? BrandStyle.accent.opacity(0.3) : Color.clear,
+                    radius: isSelected ? 4 : 0,
+                    x: 0,
+                    y: 2
+                )
             }
             .buttonStyle(.plain)
         }
@@ -229,27 +329,39 @@ struct HomeView: View {
         let symbol: String
         
         var body: some View {
-            HStack(spacing: 12) {
+            HStack(spacing: 16) {
                 Image(systemName: symbol)
-                    .font(.system(size: 22, weight: .regular))
+                    .font(.system(size: 24, weight: .medium))
                     .foregroundColor(BrandStyle.accent)
-                    .frame(width: 40, height: 40)
-                    .background(Color.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                VStack(alignment: .leading, spacing: 2) {
+                    .frame(width: 48, height: 48)
+                    .background(
+                        LinearGradient(
+                            colors: [BrandStyle.accent.opacity(0.15), BrandStyle.accent.opacity(0.08)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                
+                VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(BrandStyle.caption)
-                        .foregroundColor(.black.opacity(0.7))
+                        .foregroundColor(BrandStyle.textSecondary)
                     Text(subtitle)
                         .font(BrandStyle.body)
-                        .foregroundColor(.black)
+                        .fontWeight(.medium)
+                        .foregroundColor(BrandStyle.textPrimary)
                 }
                 Spacer()
             }
-            .padding(12)
-            .background(BrandStyle.accent.opacity(0.10))
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.black.opacity(0.06), lineWidth: 1))
-            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .padding(16)
+            .background(BrandStyle.card)
+            .cornerRadius(16)
+            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(BrandStyle.accent.opacity(0.2), lineWidth: 1.5)
+            )
         }
     }
     
@@ -259,58 +371,56 @@ struct HomeView: View {
         
         var body: some View {
             Button(action: action) {
-                HStack(spacing: 8) {
+                HStack(spacing: 10) {
                     Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 16, weight: .medium))
                         .rotationEffect(.degrees(isLoading ? 360 : 0))
                         .animation(
                             isLoading ? .linear(duration: 0.8).repeatForever(autoreverses: false) : .default,
                             value: isLoading
                         )
                     Text("Refresh")
-                        .font(BrandStyle.caption)
+                        .font(BrandStyle.button)
                 }
-                .foregroundColor(.black)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .background(BrandStyle.accent.opacity(0.18))
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(BrandStyle.accent, lineWidth: 1))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(
+                    LinearGradient(
+                        colors: [BrandStyle.accent, BrandStyle.accent.opacity(0.8)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .cornerRadius(12)
+                .shadow(color: BrandStyle.accent.opacity(0.3), radius: 4, x: 0, y: 2)
             }
             .buttonStyle(.plain)
         }
     }
     
-    private struct RecentEntryCard: View {
-        let entry: SparkEntry
-        
+    private struct EmptyStateView: View {
         var body: some View {
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: "doc.text.magnifyingglass")
-                    .font(.system(size: 20, weight: .regular))
-                    .foregroundColor(BrandStyle.accent)
-                    .frame(width: 40, height: 40)
-                    .background(Color.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(entry.title)
-                        .font(BrandStyle.body)
-                        .foregroundColor(.black)
-                        .lineLimit(1)
-                    Text(entry.content)
-                        .font(BrandStyle.caption)
-                        .foregroundColor(.black.opacity(0.75))
-                        .lineLimit(2)
-                }
-                Spacer()
-                
+            VStack(spacing: 20) {
                 Image(systemName: "lock.open")
-                    .foregroundColor(.black.opacity(0.7))
+                    .font(.system(size: 56, weight: .light))
+                    .foregroundColor(BrandStyle.secondary.opacity(0.4))
+                
+                Text("No unlocked entries yet")
+                    .font(BrandStyle.sectionTitle)
+                    .foregroundColor(BrandStyle.textPrimary)
+                
+                Text("Create notes and unlock them by meeting their conditions")
+                    .font(BrandStyle.body)
+                    .foregroundColor(BrandStyle.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
             }
-            .padding(12)
-            .background(BrandStyle.accent.opacity(0.10))
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.black.opacity(0.06), lineWidth: 1))
-            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 60)
+            .background(BrandStyle.card)
+            .cornerRadius(16)
+            .shadow(color: Color.black.opacity(0.03), radius: 4, x: 0, y: 2)
         }
     }
     
@@ -352,8 +462,4 @@ struct HomeView: View {
         .environmentObject(WeatherService())
         .environmentObject(EmotionService.shared)
         .environmentObject(StorageService.shared)
-}
-
-#Preview {
-    HomeView()
 }

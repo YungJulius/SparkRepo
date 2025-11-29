@@ -12,7 +12,7 @@ import Combine
 
 // MARK: - Weather Enum
 
-enum Weather: String, Codable {
+enum Weather: String, Codable, Hashable {
     case clear
     case partlyCloudy
     case cloudy

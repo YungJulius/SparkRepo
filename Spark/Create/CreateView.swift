@@ -6,10 +6,14 @@ struct CreateView: View {
     @EnvironmentObject var weather: WeatherService
     @EnvironmentObject var emotion: EmotionService
     @EnvironmentObject var storage: StorageService
-    
+
     @State private var path = NavigationPath()
     @State private var title: String = ""
     @State private var content: String = ""
+    // Central unlock condition state
+    @State private var geofence: Geofence? = nil
+    @State private var weatherCondition: Weather? = nil
+    @State private var emotionCondition: Emotion? = nil
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -63,25 +67,20 @@ struct CreateView: View {
                 switch screen {
                 case "location":
                     LocationLockView(
-                        title: title,
-                        content: content,
+                        geofence: $geofence,
                         path: $path
                     )
 
                 case "weather":
                     WeatherLockView(
-                        title: title,
-                        content: content,
-                        geofence: nil,
+                        geofence: $geofence,
+                        weather: $weatherCondition,
                         path: $path
                     )
 
                 case "emotion":
                     EmotionLockView(
-                        title: title,
-                        content: content,
-                        geofence: nil,
-                        weather: nil,
+                        emotion: $emotionCondition,
                         path: $path
                     )
 
@@ -89,9 +88,9 @@ struct CreateView: View {
                     EarliestUnlockView(
                         title: title,
                         content: content,
-                        geofence: nil,
-                        weather: nil,
-                        emotion: nil,
+                        geofence: geofence,
+                        weather: weatherCondition,
+                        emotion: emotionCondition,
                         path: $path
                     )
 

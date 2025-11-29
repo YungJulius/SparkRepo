@@ -10,26 +10,35 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var selectedTab = 0
+    
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             HomeView()
                 .tabItem {
                     Image(systemName: "house.fill")
                     Text("Home")
                 }
+                .tag(0)
 
             CreateView()
                 .tabItem {
                     Image(systemName: "plus.circle.fill")
                     Text("Create")
                 }
+                .tag(1)
 
             SearchView()
                 .tabItem {
                     Image(systemName: "magnifyingglass")
                     Text("Search")
                 }
-        }.tint(BrandStyle.accent)
+                .tag(2)
+        }
+        .tint(BrandStyle.accent)
+        .onReceive(NotificationCenter.default.publisher(for: .switchToHomeTab)) { _ in
+            selectedTab = 0
+        }
     }
 }
 
