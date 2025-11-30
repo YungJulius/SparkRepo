@@ -196,6 +196,15 @@ cd SparkDevOps
 
 The CI pipeline will automatically validate your changes.
 
+### Branch Protection
+
+This repository uses branch protection rules to ensure code quality. See [docs/BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md) for setup instructions.
+
+**Quick Setup:**
+1. Go to Settings → Branches
+2. Add rule for `main` branch
+3. Enable: Require PR, Require status checks (lint, test, build, docker-compose), Require approvals
+
 ---
 
 ## Questions?
