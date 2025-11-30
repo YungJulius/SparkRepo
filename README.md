@@ -2,6 +2,8 @@
 
 [![CI/CD Pipeline](https://github.com/daniahsn/SparkDevOps/actions/workflows/ci.yml/badge.svg)](https://github.com/daniahsn/SparkDevOps/actions/workflows/ci.yml)
 
+> **Note:** This is a test PR to generate CI status checks for branch protection setup.
+
 ## Authors
 
 **Names:** Sangitha, Dania and Julius
