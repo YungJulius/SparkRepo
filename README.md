@@ -1,5 +1,4 @@
-# Project README
-
+# Spark - Journaling App 
 ## Authors
 
 **Names:** Sangitha, Dania and Julius
@@ -15,8 +14,6 @@
 ## A4 Submission
 
 You can access the A4 submission here: https://docs.google.com/document/d/1hZSMWkMfXquq6jYkNfozzqEGnjY6hOqaJDpuf-w7EPE/edit?usp=sharing
-
----
 
 ## How to Pull and Run the Xcode Project
 
@@ -53,4 +50,4 @@ Just clone the repo.
 
 ---
 
-If you have questions or encounter issues re-running the prototype, please reach out to us :) 
+If you have questions or encounter issues re-running the prototype, please reach out to us :)
