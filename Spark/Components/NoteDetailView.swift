@@ -32,16 +32,6 @@ struct NoteDetailView: View {
                     Text("Created: \(entry.creationDate, style: .date)")
                         .font(BrandStyle.caption)
                         .foregroundColor(BrandStyle.textSecondary)
-                    
-                    if let unlockedAt = entry.unlockedAt {
-                        Text("Unlocked: \(unlockedAt, style: .date)")
-                            .font(BrandStyle.caption)
-                            .foregroundColor(.green)
-                    } else {
-                        Text("Earliest unlock: \(entry.earliestUnlock, style: .date)")
-                            .font(BrandStyle.caption)
-                            .foregroundColor(BrandStyle.textSecondary)
-                    }
                 }
                 .padding()
                 .background(BrandStyle.card)

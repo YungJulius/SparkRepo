@@ -1,6 +1,14 @@
 import SwiftUI
 import CoreLocation
 
+// MARK: - Navigation Enum
+enum CreateFlowStep: Hashable {
+    case location
+    case weather
+    case emotion
+    case finish
+}
+
 struct CreateView: View {
     @EnvironmentObject var location: LocationService
     @EnvironmentObject var weather: WeatherService
@@ -10,7 +18,8 @@ struct CreateView: View {
     @State private var path = NavigationPath()
     @State private var title: String = ""
     @State private var content: String = ""
-    // Central unlock condition state
+
+    // Unlock conditions shared across screens
     @State private var geofence: Geofence? = nil
     @State private var weatherCondition: Weather? = nil
     @State private var emotionCondition: Emotion? = nil
@@ -50,7 +59,7 @@ struct CreateView: View {
 
                 // --- Next Button ---
                 Button {
-                    path.append("location")
+                    path.append(CreateFlowStep.location)
                 } label: {
                     Text("Next")
                         .font(BrandStyle.button)
@@ -63,50 +72,49 @@ struct CreateView: View {
             }
             .padding()
             .navigationTitle("Create Entry")
-            .navigationDestination(for: String.self) { screen in
-                switch screen {
-                case "location":
+            .navigationDestination(for: CreateFlowStep.self) { step in
+                switch step {
+
+                case .location:
                     LocationLockView(
                         geofence: $geofence,
                         path: $path
                     )
 
-                case "weather":
+                case .weather:
                     WeatherLockView(
                         geofence: $geofence,
                         weather: $weatherCondition,
                         path: $path
                     )
 
-                case "emotion":
+                case .emotion:
                     EmotionLockView(
+                        title: title,
+                        content: content,
+                        geofence: $geofence,
+                        weather: $weatherCondition,
                         emotion: $emotionCondition,
                         path: $path
                     )
 
-                case "unlock":
-                    EarliestUnlockView(
-                        title: title,
-                        content: content,
-                        geofence: geofence,
-                        weather: weatherCondition,
-                        emotion: emotionCondition,
-                        path: $path
-                    )
-
-                case "finish":
+                case .finish:
                     FinishedView(path: $path)
-
-                default:
-                    EmptyView()
                 }
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .resetCreateFlow)) { _ in
-            title = ""
-            content = ""
-            path = NavigationPath()     // ← Return completely to beginning
+            resetFlow()
         }
+    }
+
+    private func resetFlow() {
+        title = ""
+        content = ""
+        geofence = nil
+        weatherCondition = nil
+        emotionCondition = nil
+        path = NavigationPath()
     }
 }
 

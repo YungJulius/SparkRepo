@@ -14,6 +14,7 @@ struct EarliestUnlockView: View {
 
     var body: some View {
         VStack(spacing: 24) {
+
             Text("Complete Entry")
                 .font(BrandStyle.title)
 
@@ -22,27 +23,25 @@ struct EarliestUnlockView: View {
                 .foregroundColor(.black)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
-            
-            // Debug info
+
+            // Debug
             #if DEBUG
             VStack(alignment: .leading, spacing: 4) {
                 Text("DEBUG - Received values:")
                     .font(.caption)
                     .foregroundColor(.red)
-                Text("Emotion: \(emotion?.rawValue ?? "NIL")")
-                    .font(.caption)
-                Text("Weather: \(weather?.rawValue ?? "NIL")")
-                    .font(.caption)
-                Text("Geofence: \(geofence != nil ? "YES" : "NO")")
-                    .font(.caption)
+                Text("Emotion: \(emotion?.rawValue ?? "NIL")").font(.caption)
+                Text("Weather: \(weather?.rawValue ?? "NIL")").font(.caption)
+                Text("Geofence: \(geofence != nil ? "YES" : "NO")").font(.caption)
             }
             .padding(8)
             .background(Color.red.opacity(0.1))
             .cornerRadius(8)
             #endif
 
-            // Show conditions summary
+            // Summary
             VStack(alignment: .leading, spacing: 12) {
+
                 if geofence != nil {
                     HStack {
                         Image(systemName: "mappin.circle.fill")
@@ -51,25 +50,25 @@ struct EarliestUnlockView: View {
                             .font(BrandStyle.body)
                     }
                 }
-                
-                if weather != nil {
+
+                if let w = weather {
                     HStack {
                         Image(systemName: "cloud.fill")
                             .foregroundColor(BrandStyle.accent)
-                        Text("Weather: \(weather!.rawValue.capitalized)")
+                        Text("Weather: \(w.rawValue.capitalized)")
                             .font(BrandStyle.body)
                     }
                 }
-                
-                if emotion != nil {
+
+                if let emo = emotion {
                     HStack {
                         Image(systemName: "face.smiling")
                             .foregroundColor(BrandStyle.accent)
-                        Text("Emotion: \(emotion!.rawValue.capitalized)")
+                        Text("Emotion: \(emo.rawValue.capitalized)")
                             .font(BrandStyle.body)
                     }
                 }
-                
+
                 if geofence == nil && weather == nil && emotion == nil {
                     Text("No unlock conditions set - note will unlock immediately")
                         .font(BrandStyle.caption)
@@ -83,7 +82,7 @@ struct EarliestUnlockView: View {
 
             Spacer()
 
-            // Finish button
+            // Finish
             Button {
                 saveEntry()
                 path.append("finish")
@@ -101,17 +100,13 @@ struct EarliestUnlockView: View {
     }
 
     private func saveEntry() {
-        // Debug: Print what we received
-        print("📝 EarliestUnlockView.saveEntry() called")
-        print("  Received emotion parameter: \(emotion?.rawValue ?? "NIL")")
-        print("  Received weather parameter: \(weather?.rawValue ?? "NIL")")
-        print("  Received geofence parameter: \(geofence != nil ? "YES" : "NO")")
+
+        print("📝 EarliestUnlockView.saveEntry()")
+        print("  Emotion: \(emotion?.rawValue ?? "NIL")")
+        print("  Weather: \(weather?.rawValue ?? "NIL")")
+        print("  Geofence: \(geofence != nil ? "YES" : "NO")")
         print("  Title: \(title)")
         print("  Content length: \(content.count) chars")
-        
-        // Time is no longer a requirement - always set to distant past
-        // Notes unlock based on emotion/weather/location conditions only
-        let earliestUnlock = Date.distantPast
 
         let entry = SparkEntry(
             title: title,
@@ -120,36 +115,20 @@ struct EarliestUnlockView: View {
             weather: weather,
             emotion: emotion,
             creationDate: Date(),
-            earliestUnlock: earliestUnlock,
             unlockedAt: nil
         )
 
-        // Debug: Print to verify data in entry object
-        print("🔍 Created SparkEntry object:")
-        print("  Title: \(entry.title)")
-        print("  Content: \(entry.content.prefix(50))...")
-        print("  Geofence: \(entry.geofence != nil ? "YES (\(entry.geofence!.latitude), \(entry.geofence!.longitude))" : "NO")")
-        print("  Weather: \(entry.weather?.rawValue ?? "NIL")")
-        print("  Emotion: \(entry.emotion?.rawValue ?? "NIL")")
-        
         storage.add(entry)
-        
-        // Verify it was saved
+
         print("✅ Entry saved. Total entries: \(storage.entries.count)")
-        if let saved = storage.entries.last {
-            print("  Saved entry has emotion: \(saved.emotion?.rawValue ?? "NIL")")
-            print("  Saved entry has weather: \(saved.weather?.rawValue ?? "NIL")")
-            print("  Saved entry has geofence: \(saved.geofence != nil ? "YES" : "NO")")
-            print("  Saved entry content length: \(saved.content.count) chars")
-        }
     }
 }
 
 #Preview {
     NavigationStack {
         EarliestUnlockView(
-            title: "Sample Title",
-            content: "Sample content for preview",
+            title: "Sample",
+            content: "Hello world",
             geofence: nil,
             weather: .rain,
             emotion: .happy,

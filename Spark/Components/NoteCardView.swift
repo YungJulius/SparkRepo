@@ -19,8 +19,10 @@ struct NoteCardView: View {
             }
         }) {
             VStack(alignment: .leading, spacing: 16) {
+
                 // Header with lock status
                 HStack(alignment: .center) {
+
                     // Lock status badge
                     HStack(spacing: 6) {
                         Image(systemName: entry.isLocked ? "lock.fill" : "lock.open.fill")
@@ -40,12 +42,12 @@ struct NoteCardView: View {
                     
                     Spacer()
                     
-                    // Date
+                    // Date created
                     Text(entry.creationDate, style: .date)
                         .font(BrandStyle.caption)
                         .foregroundColor(BrandStyle.textSecondary)
                 }
-                
+
                 // Title
                 Text(entry.title)
                     .font(BrandStyle.sectionTitle)
@@ -73,6 +75,7 @@ struct NoteCardView: View {
                 if entry.geofence != nil || entry.weather != nil || entry.emotion != nil {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
+
                             if entry.geofence != nil {
                                 ConditionBadge(
                                     icon: "mappin.circle.fill",
@@ -81,38 +84,32 @@ struct NoteCardView: View {
                                 )
                             }
                             
-                            if entry.weather != nil {
+                            if let w = entry.weather {
                                 ConditionBadge(
-                                    icon: weatherIconName(entry.weather!),
-                                    text: entry.weather!.rawValue.capitalized,
+                                    icon: weatherIconName(w),
+                                    text: w.rawValue.capitalized,
                                     color: BrandStyle.secondary
                                 )
                             }
                             
-                            if entry.emotion != nil {
+                            if let emo = entry.emotion {
                                 ConditionBadge(
-                                    icon: emotionIcon(entry.emotion!),
-                                    text: entry.emotion!.rawValue.capitalized,
+                                    icon: emotionIcon(emo),
+                                    text: emo.rawValue.capitalized,
                                     color: BrandStyle.secondary
                                 )
                             }
                         }
                     }
                 }
-                
-                // Unlock date info
-                HStack(spacing: 6) {
-                    if entry.isLocked {
-                        Image(systemName: "calendar")
-                            .font(.system(size: 12))
-                            .foregroundColor(BrandStyle.accent)
-                        Text("Unlocks: \(entry.earliestUnlock, style: .date)")
-                            .font(BrandStyle.caption)
-                            .foregroundColor(BrandStyle.textSecondary)
-                    } else if let unlockedAt = entry.unlockedAt {
+
+                // Unlock info (only if unlocked)
+                if let unlockedAt = entry.unlockedAt {
+                    HStack(spacing: 6) {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 12))
                             .foregroundColor(BrandStyle.secondary)
+
                         Text("Unlocked: \(unlockedAt, style: .relative)")
                             .font(BrandStyle.caption)
                             .foregroundColor(BrandStyle.textSecondary)
@@ -127,8 +124,8 @@ struct NoteCardView: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(
-                        entry.isLocked 
-                            ? BrandStyle.accent.opacity(0.2) 
+                        entry.isLocked
+                            ? BrandStyle.accent.opacity(0.2)
                             : BrandStyle.secondary.opacity(0.2),
                         lineWidth: 1.5
                     )
@@ -218,4 +215,3 @@ struct ConditionBadge: View {
     .padding()
     .background(BrandStyle.background)
 }
-

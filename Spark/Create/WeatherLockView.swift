@@ -17,7 +17,7 @@ struct WeatherLockView: View {
             Text("Weather Lock")
                 .font(BrandStyle.title)
 
-            // ------- Explanatory -------
+            // ------- Explanation -------
             Text("Choose a weather condition that must match to unlock your note.")
                 .font(BrandStyle.body)
                 .foregroundColor(.black)
@@ -62,7 +62,7 @@ struct WeatherLockView: View {
                 // Skip weather
                 Button {
                     weather = nil
-                    path.append("emotion")
+                    path.append(CreateFlowStep.emotion)
                 } label: {
                     Text("Skip Weather")
                         .font(BrandStyle.button)
@@ -76,19 +76,24 @@ struct WeatherLockView: View {
                 // Use weather
                 Button {
                     weather = selectedWeather
-                    path.append("emotion")
+                    path.append(CreateFlowStep.emotion)
                 } label: {
                     Text("Use Weather")
                         .font(BrandStyle.button)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(BrandStyle.accent)
+                        .background(selectedWeather != nil ? BrandStyle.accent : Color.gray)
                         .cornerRadius(12)
                 }
+                .disabled(selectedWeather == nil)
             }
         }
         .padding()
+        .onAppear {
+            // Sync previously chosen value from Binding
+            selectedWeather = weather
+        }
     }
 
     // MARK: - Weather Options
@@ -160,7 +165,7 @@ struct WeatherIcon: View {
     NavigationStack {
         WeatherLockView(
             geofence: .constant(nil),
-            weather: .constant(nil),
+            weather: .constant(.rain),
             path: .constant(NavigationPath())
         )
         .environmentObject(WeatherService())

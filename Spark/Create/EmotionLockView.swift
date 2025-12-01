@@ -1,7 +1,15 @@
 import SwiftUI
 
 struct EmotionLockView: View {
-    // Bind back to CreateView state
+    @EnvironmentObject var storage: StorageService
+
+    // Data passed from CreateView
+    let title: String
+    let content: String
+    @Binding var geofence: Geofence?
+    @Binding var weather: Weather?
+
+    // Bind back to CreateView
     @Binding var emotion: Emotion?
     @Binding var path: NavigationPath
 
@@ -24,17 +32,21 @@ struct EmotionLockView: View {
             // ------- Emotion List -------
             ScrollView {
                 VStack(spacing: 0) {
+
                     ForEach(Emotion.allCases, id: \.self) { emo in
 
-                        EmotionRow(emotion: emo, isSelected: selectedEmotion == emo)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(selectedEmotion == emo ? BrandStyle.accent : .white)
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                selectedEmotion = emo
-                            }
+                        EmotionRow(
+                            emotion: emo,
+                            isSelected: selectedEmotion == emo
+                        )
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(selectedEmotion == emo ? BrandStyle.accent : .white)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            selectedEmotion = emo
+                        }
 
                         if emo != Emotion.allCases.last {
                             Rectangle()
@@ -58,7 +70,8 @@ struct EmotionLockView: View {
                 // Skip
                 Button {
                     emotion = nil
-                    path.append("unlock")
+                    saveEntryHere()
+                    path.append(CreateFlowStep.finish)
                 } label: {
                     Text("Skip Emotion")
                         .font(BrandStyle.button)
@@ -69,12 +82,12 @@ struct EmotionLockView: View {
                         .cornerRadius(12)
                 }
 
-                // Use
+                // Use Emotion
                 Button {
-                    if selectedEmotion != nil {
-                        print("🎭 EmotionLockView: Selected emotion = \(selectedEmotion!.rawValue)")
-                        emotion = selectedEmotion
-                        path.append("unlock")
+                    if let emo = selectedEmotion {
+                        emotion = emo
+                        saveEntryHere()
+                        path.append(CreateFlowStep.finish)
                     }
                 } label: {
                     Text("Use Emotion")
@@ -89,8 +102,28 @@ struct EmotionLockView: View {
             }
         }
         .padding()
+        .onAppear {
+            // Re-sync if user returns back
+            selectedEmotion = emotion
+        }
+    }
+
+    // MARK: - Save Entry Right Here (Option B)
+    private func saveEntryHere() {
+        let entry = SparkEntry(
+            title: title,
+            content: content,
+            geofence: geofence,
+            weather: weather,
+            emotion: selectedEmotion,  // nil if skipped
+            creationDate: Date(),
+            unlockedAt: nil
+        )
+
+        storage.add(entry)
     }
 }
+
 
 // MARK: - Row
 private struct EmotionRow: View {
@@ -136,11 +169,3 @@ private struct EmotionRow: View {
     }
 }
 
-#Preview {
-    NavigationStack {
-        EmotionLockView(
-            emotion: .constant(nil),
-            path: .constant(NavigationPath())
-        )
-    }
-}

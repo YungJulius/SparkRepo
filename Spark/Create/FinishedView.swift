@@ -24,14 +24,17 @@ struct FinishedView: View {
                     .padding(.horizontal)
 
                 Button {
-                    // Reset the create flow
+                    // Reset the create flow state
                     NotificationCenter.default.post(name: .resetCreateFlow, object: nil)
-                    // Pop all the way back to CreateView root
+
+                    // Pop all the way back to CreateView
                     while path.count > 0 {
                         path.removeLast()
                     }
-                    // Switch to Home tab
+
+                    // Switch to Home tab after creating a note
                     NotificationCenter.default.post(name: .switchToHomeTab, object: nil)
+
                 } label: {
                     Text("Done")
                         .font(BrandStyle.button)
