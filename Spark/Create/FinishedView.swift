@@ -17,7 +17,7 @@ struct FinishedView: View {
                     .frame(width: 90)
                     .foregroundColor(.white)
 
-                Text("Entry successfully locked and saved!")
+                Text("Your memory has been preserved and is waiting for its moment!")
                     .font(BrandStyle.title)
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)

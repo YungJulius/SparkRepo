@@ -25,11 +25,20 @@ struct LocationLockView: View {
 
     var body: some View {
         VStack(spacing: 24) {
+            // Header
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Spark")
+                    .font(BrandStyle.title)
+                    .foregroundColor(BrandStyle.accent)
+                Text("Location Trigger")
+                    .font(BrandStyle.sectionTitle)
+                    .foregroundColor(BrandStyle.textPrimary)
+            }
+            .padding(.horizontal)
+            .padding(.top, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            Text("Location Lock")
-                .font(BrandStyle.title)
-
-            Text("Select a location the user must revisit to unlock this note.")
+            Text("Choose a place where this memory will be retrieved when you return.")
                 .font(BrandStyle.body)
                 .foregroundColor(.black)
                 .multilineTextAlignment(.center)
@@ -48,8 +57,8 @@ struct LocationLockView: View {
                 .onReceive(Just(selectedCoordinate)) { _ in updateRegion() }
                 .onTapGesture { showFullScreenMap = true }
                 .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(BrandStyle.accent, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(BrandStyle.accent, lineWidth: 1.5)
                 )
 
                 VStack {
@@ -78,9 +87,10 @@ struct LocationLockView: View {
                 TextField("100", text: $radiusInMeters)
                     .keyboardType(.numberPad)
                     .padding(10)
+                    .background(Color.white)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(BrandStyle.accent, lineWidth: 1)
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(BrandStyle.accent, lineWidth: 1.5)
                     )
             }
 
@@ -200,7 +210,7 @@ struct FullScreenLocationPicker: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
                     .background(Color(.systemGray5))
-                    .cornerRadius(10)
+                    .cornerRadius(12)
                     .onChange(of: searchQuery) { text in
                         completer.queryFragment = text
                     }
@@ -255,7 +265,7 @@ struct FullScreenLocationPicker: View {
                     .frame(maxWidth: .infinity)
                     .background(BrandStyle.accent)
                     .foregroundColor(.white)
-                    .cornerRadius(14)
+                    .cornerRadius(12)
                     .padding()
                 }
             }

@@ -27,6 +27,18 @@ struct CreateView: View {
     var body: some View {
         NavigationStack(path: $path) {
             VStack(spacing: 16) {
+                // Header
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Spark")
+                        .font(BrandStyle.title)
+                        .foregroundColor(BrandStyle.accent)
+                    Text("Create Memory")
+                        .font(BrandStyle.sectionTitle)
+                        .foregroundColor(BrandStyle.textPrimary)
+                }
+                .padding(.horizontal)
+                .padding(.top, 8)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 // --- Title Field ---
                 VStack(alignment: .leading, spacing: 4) {
@@ -34,28 +46,32 @@ struct CreateView: View {
                         .font(BrandStyle.caption)
                         .foregroundColor(BrandStyle.textSecondary)
 
-                    TextField("New Entry Title", text: $title)
+                    TextField("New Memory Title", text: $title)
                         .padding(12)
+                        .background(Color.white)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(BrandStyle.accent, lineWidth: 1)
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(BrandStyle.accent, lineWidth: 1.5)
                         )
                 }
+                .padding(.horizontal)
 
                 // --- Content Field ---
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Content")
+                    Text("Your Memory")
                         .font(BrandStyle.caption)
                         .foregroundColor(BrandStyle.textSecondary)
 
                     TextEditor(text: $content)
                         .padding(12)
+                        .background(Color.white)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(BrandStyle.accent, lineWidth: 1)
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(BrandStyle.accent, lineWidth: 1.5)
                         )
                         .frame(maxHeight: .infinity)
                 }
+                .padding(.horizontal)
 
                 // --- Next Button ---
                 Button {
@@ -69,9 +85,8 @@ struct CreateView: View {
                         .background(BrandStyle.accent)
                         .cornerRadius(12)
                 }
+                .padding(.horizontal)
             }
-            .padding()
-            .navigationTitle("Create Entry")
             .navigationDestination(for: CreateFlowStep.self) { step in
                 switch step {
 

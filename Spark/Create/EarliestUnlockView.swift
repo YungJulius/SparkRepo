@@ -14,11 +14,20 @@ struct EarliestUnlockView: View {
 
     var body: some View {
         VStack(spacing: 24) {
+            // Header
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Spark")
+                    .font(BrandStyle.title)
+                    .foregroundColor(BrandStyle.accent)
+                Text("Complete Memory")
+                    .font(BrandStyle.sectionTitle)
+                    .foregroundColor(BrandStyle.textPrimary)
+            }
+            .padding(.horizontal)
+            .padding(.top, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            Text("Complete Entry")
-                .font(BrandStyle.title)
-
-            Text("Your note will unlock when the conditions you set are met.")
+            Text("Your memory will be retrieved when the moments you've chosen align.")
                 .font(BrandStyle.body)
                 .foregroundColor(.black)
                 .multilineTextAlignment(.center)
@@ -46,7 +55,7 @@ struct EarliestUnlockView: View {
                     HStack {
                         Image(systemName: "mappin.circle.fill")
                             .foregroundColor(BrandStyle.accent)
-                        Text("Location required")
+                        Text("Return to this place")
                             .font(BrandStyle.body)
                     }
                 }
@@ -55,7 +64,7 @@ struct EarliestUnlockView: View {
                     HStack {
                         Image(systemName: "cloud.fill")
                             .foregroundColor(BrandStyle.accent)
-                        Text("Weather: \(w.rawValue.capitalized)")
+                        Text("When \(w.displayName.lowercased()) returns")
                             .font(BrandStyle.body)
                     }
                 }
@@ -64,21 +73,25 @@ struct EarliestUnlockView: View {
                     HStack {
                         Image(systemName: "face.smiling")
                             .foregroundColor(BrandStyle.accent)
-                        Text("Emotion: \(emo.rawValue.capitalized)")
+                        Text("When you feel \(emo.rawValue) again")
                             .font(BrandStyle.body)
                     }
                 }
 
                 if geofence == nil && weather == nil && emotion == nil {
-                    Text("No unlock conditions set - note will unlock immediately")
+                    Text("No triggers set - this memory is ready to be retrieved anytime")
                         .font(BrandStyle.caption)
                         .foregroundColor(BrandStyle.textSecondary)
                         .italic()
                 }
             }
-            .padding()
-            .background(BrandStyle.card)
-            .cornerRadius(12)
+            .padding(16)
+            .background(Color.white)
+            .cornerRadius(16)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(BrandStyle.accent, lineWidth: 1.5)
+            )
 
             Spacer()
 
