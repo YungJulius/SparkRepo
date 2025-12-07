@@ -8,9 +8,12 @@
 import SwiftUI
 import MapKit
 
+
 struct NoteDetailView: View {
+    @EnvironmentObject var storage: StorageService
     let entry: SparkEntry
     @Environment(\.dismiss) var dismiss
+
     
     var body: some View {
         ScrollView {
@@ -70,6 +73,28 @@ struct NoteDetailView: View {
                 )
                 .padding(.horizontal)
                 .padding(.top, 8)
+    
+                
+                //Relock button
+                if !entry.isLocked {
+                    Button {
+                        relockEntry()
+                        dismiss()
+                    } label: {
+                        HStack {
+                            Image(systemName: "lock.fill")
+                            Text("Relock Memory")
+                                .fontWeight(.semibold)
+                        }
+                        .font(BrandStyle.button)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(BrandStyle.accent)
+                        .cornerRadius(12)
+                    }
+                    .padding(.horizontal)
+                }
                 
                 // Content (only show if unlocked)
                 if entry.isLocked {
@@ -201,6 +226,13 @@ struct NoteDetailView: View {
             .padding(.bottom)
         }
         .toolbar(.hidden, for: .navigationBar)
+    }
+    
+    private func relockEntry() {
+        var updated = entry
+        updated.unlockedAt = nil
+        storage.update(updated)
+        NotificationCenter.default.post(name: .refreshStorage, object: nil)
     }
     
     private var hasAnyLockConditions: Bool {

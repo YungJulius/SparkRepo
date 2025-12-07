@@ -125,6 +125,11 @@ struct HomeView: View {
             .navigationDestination(item: $selectedEntry) { entry in
                 NoteDetailView(entry: entry)
             }
+            
+            .onReceive(NotificationCenter.default.publisher(for: .refreshStorage)) { _ in
+                storage.load()
+                checkAndUnlockEntries()
+            }
         }
     }
     
@@ -447,6 +452,10 @@ struct HomeView: View {
         }
     }
 }
+
+extension Notification.Name {
+    static let refreshStorage = Notification.Name("refreshStorage")
+}
     
 #Preview {
     HomeView()
@@ -455,3 +464,4 @@ struct HomeView: View {
         .environmentObject(EmotionService.shared)
         .environmentObject(StorageService.shared)
 }
+

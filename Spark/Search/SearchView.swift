@@ -46,7 +46,7 @@ struct SearchView: View {
                 .padding(.top, 8)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 
-                // Debug: Show memory count and clear button (for testing)
+                // Debug: Show memory count (for testing)
                 #if DEBUG
                 HStack {
                     Text("Memories: \(storage.entries.count)")
@@ -54,24 +54,6 @@ struct SearchView: View {
                         .foregroundColor(BrandStyle.textSecondary)
                     
                     Spacer()
-                    
-                    Button("Clear All") {
-                        storage.clearAll()
-                    }
-                    .font(BrandStyle.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(
-                        LinearGradient(
-                            colors: [Color.red, Color.red.opacity(0.8)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .cornerRadius(10)
-                    .shadow(color: Color.red.opacity(0.3), radius: 4, x: 0, y: 2)
                 }
                 .padding(.horizontal)
                 .padding(.top, 8)
@@ -250,6 +232,9 @@ struct SearchView: View {
                 // Refresh entries when view appears to ensure latest data is shown
                 storage.load()
             }
+            .onReceive(NotificationCenter.default.publisher(for: .refreshStorage)) { _ in storage.load()
+            }
+            
             .background(
                 LinearGradient(
                     colors: [
