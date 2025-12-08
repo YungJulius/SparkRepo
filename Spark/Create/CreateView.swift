@@ -87,6 +87,7 @@ struct CreateView: View {
                 }
                 .padding(.horizontal)
             }
+            .hideKeyboardOnTap()
             .navigationDestination(for: CreateFlowStep.self) { step in
                 switch step {
 

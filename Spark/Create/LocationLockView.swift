@@ -133,6 +133,7 @@ struct LocationLockView: View {
         .fullScreenCover(isPresented: $showFullScreenMap) {
             FullScreenLocationPicker(selectedCoordinate: $selectedCoordinate)
         }
+        .hideKeyboardOnTap()
     }
 
     // MARK: - Map Pins
@@ -330,5 +331,16 @@ final class SearchCompleterDelegate: NSObject, MKLocalSearchCompleterDelegate {
 
     func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
         onUpdate([])
+    }
+}
+
+extension View {
+    func hideKeyboardOnTap() -> some View {
+        self.onTapGesture {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder),
+                                            to: nil,
+                                            from: nil,
+                                            for: nil)
+        }
     }
 }
