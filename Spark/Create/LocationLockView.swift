@@ -1,3 +1,8 @@
+
+// This page was created from a ChatGpt Code skeleton. The majority of the
+// content however is written by Sanghita, Dania and Julius.
+// Some bugs have been resolved with the usage of ChatGpt.
+
 import SwiftUI
 import MapKit
 import CoreLocation
@@ -9,7 +14,12 @@ struct MapPinItem: Identifiable {
     let coordinate: CLLocationCoordinate2D
 }
 
+// =====================================================================
+// MARK: - MAIN VIEW
+// =====================================================================
+
 struct LocationLockView: View {
+
     @EnvironmentObject var location: LocationService
 
     // Bind back to CreateView's geofence
@@ -25,11 +35,9 @@ struct LocationLockView: View {
 
     var body: some View {
         VStack(spacing: 24) {
+
             // Header
             VStack(alignment: .leading, spacing: 8) {
-                Text("Spark")
-                    .font(BrandStyle.title)
-                    .foregroundColor(BrandStyle.accent)
                 Text("Location Trigger")
                     .font(BrandStyle.sectionTitle)
                     .foregroundColor(BrandStyle.textPrimary)
@@ -92,6 +100,7 @@ struct LocationLockView: View {
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(BrandStyle.accent, lineWidth: 1.5)
                     )
+                    .keyboardDoneToolbar()   // <-- Done button added here
             }
 
             Spacer()
@@ -127,6 +136,7 @@ struct LocationLockView: View {
                         .cornerRadius(12)
                 }
             }
+
         }
         .padding()
         .onAppear { loadExistingSelectionOrInitialize() }
@@ -144,7 +154,7 @@ struct LocationLockView: View {
         return []
     }
 
-    // MARK: - Region Centering
+    // MARK: - Update Region
     private func updateRegion() {
         guard let coord = selectedCoordinate else { return }
         region = MKCoordinateRegion(
@@ -153,16 +163,15 @@ struct LocationLockView: View {
         )
     }
 
-    // MARK: - On Appear: Load existing selection
+    // MARK: - Load Existing or Init
     private func loadExistingSelectionOrInitialize() {
         if let gf = geofence {
-            // Load previously selected geofence
             let coord = CLLocationCoordinate2D(latitude: gf.latitude, longitude: gf.longitude)
             selectedCoordinate = coord
             radiusInMeters = "\(Int(gf.radius))"
             updateRegion()
-        } else if let current = location.currentLocation {
-            // Default to user's current location
+        }
+        else if let current = location.currentLocation {
             selectedCoordinate = current.coordinate
             updateRegion()
         }
@@ -174,9 +183,7 @@ struct LocationLockView: View {
             geofence = nil
             return
         }
-
         let radius = Double(radiusInMeters) ?? 100
-
         geofence = Geofence(
             latitude: coord.latitude,
             longitude: coord.longitude,
@@ -185,19 +192,17 @@ struct LocationLockView: View {
     }
 }
 
-
 // =====================================================================
-// MARK: - Full Screen Picker
+// MARK: - FULL SCREEN LOCATION PICKER
 // =====================================================================
 
 struct FullScreenLocationPicker: View {
-    @Environment(\.dismiss) var dismiss
 
+    @Environment(\.dismiss) var dismiss
     @Binding var selectedCoordinate: CLLocationCoordinate2D?
 
     @State private var region = MKCoordinateRegion()
     @State private var searchQuery = ""
-
     @State private var completer = MKLocalSearchCompleter()
     @State private var completions: [MKLocalSearchCompletion] = []
     @State private var completerDelegate: SearchCompleterDelegate? = nil
@@ -215,6 +220,7 @@ struct FullScreenLocationPicker: View {
                     .onChange(of: searchQuery) { text in
                         completer.queryFragment = text
                     }
+                    .keyboardDoneToolbar()  // <-- Done button added here
 
                 Button("Cancel") { dismiss() }
                     .foregroundColor(BrandStyle.accent)
@@ -238,7 +244,8 @@ struct FullScreenLocationPicker: View {
                         }
                     }
                 }
-            } else if !searchQuery.isEmpty {
+            }
+            else if !searchQuery.isEmpty {
                 Text("No results found")
                     .font(.caption)
                     .foregroundColor(.gray)
@@ -277,10 +284,9 @@ struct FullScreenLocationPicker: View {
         }
     }
 
-    // MARK: - Setup Search Completer
+    // MARK: - Setup Completer
     private func setupCompleter() {
         completer.resultTypes = .address
-
         let delegate = SearchCompleterDelegate { results in
             self.completions = results
         }
@@ -288,7 +294,7 @@ struct FullScreenLocationPicker: View {
         completer.delegate = delegate
     }
 
-    // MARK: - Search selection
+    // MARK: - Search Selection
     private func searchCompletionSelected(_ completion: MKLocalSearchCompletion) {
         let req = MKLocalSearch.Request(completion: completion)
         MKLocalSearch(request: req).start { res, _ in
@@ -316,8 +322,10 @@ struct FullScreenLocationPicker: View {
     }
 }
 
+// =====================================================================
+// MARK: - SEARCH DELEGATE
+// =====================================================================
 
-// ---------- MARK: Delegate ----------
 final class SearchCompleterDelegate: NSObject, MKLocalSearchCompleterDelegate {
     let onUpdate: ([MKLocalSearchCompletion]) -> Void
 
@@ -334,13 +342,37 @@ final class SearchCompleterDelegate: NSObject, MKLocalSearchCompleterDelegate {
     }
 }
 
+// =====================================================================
+// MARK: - HELPERS
+// =====================================================================
+
 extension View {
     func hideKeyboardOnTap() -> some View {
         self.onTapGesture {
-            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder),
-                                            to: nil,
-                                            from: nil,
-                                            for: nil)
+            UIApplication.shared.sendAction(
+                #selector(UIResponder.resignFirstResponder),
+                to: nil,
+                from: nil,
+                for: nil
+            )
+        }
+    }
+
+    /// Universal DONE button for any keyboard
+    func keyboardDoneToolbar() -> some View {
+        self.toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") {
+                    UIApplication.shared.sendAction(
+                        #selector(UIResponder.resignFirstResponder),
+                        to: nil,
+                        from: nil,
+                        for: nil
+                    )
+                }
+                .foregroundColor(BrandStyle.accent)
+            }
         }
     }
 }

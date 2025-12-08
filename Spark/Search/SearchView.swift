@@ -5,6 +5,10 @@
 //  Created by Julius  Jung on 20.11.2025.
 //
 
+// This page was created from a ChatGpt Code skeleton. The majority of the
+// content however is written by Sanghita, Dania and Julius.
+// Some bugs have been resolved with the usage of ChatGpt.
+
 import SwiftUI
 
 enum FilterOption: String, CaseIterable {

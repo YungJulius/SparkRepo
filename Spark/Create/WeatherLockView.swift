@@ -1,3 +1,8 @@
+
+// This page was created from a ChatGpt Code skeleton. The majority of the
+// content however is written by Sanghita, Dania and Julius.
+// Some bugs have been resolved with the usage of ChatGpt.
+
 import SwiftUI
 
 struct WeatherLockView: View {
@@ -14,9 +19,6 @@ struct WeatherLockView: View {
         VStack(spacing: 24) {
             // Header
             VStack(alignment: .leading, spacing: 8) {
-                Text("Spark")
-                    .font(BrandStyle.title)
-                    .foregroundColor(BrandStyle.accent)
                 Text("Weather Trigger")
                     .font(BrandStyle.sectionTitle)
                     .foregroundColor(BrandStyle.textPrimary)
@@ -81,6 +83,7 @@ struct WeatherLockView: View {
 
                 // Skip weather
                 Button {
+                    selectedWeather = nil
                     weather = nil
                     path.append(CreateFlowStep.emotion)
                 } label: {

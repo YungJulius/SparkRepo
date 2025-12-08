@@ -1,11 +1,16 @@
+
+// This page was created from a ChatGpt Code skeleton. The majority of the
+// content however is written by Sanghita, Dania and Julius.
+// Some bugs have been resolved with the usage of ChatGpt.
+
 import SwiftUI
 
 struct EmotionLockView: View {
     @EnvironmentObject var storage: StorageService
 
     // Data passed from CreateView
-    let title: String
-    let content: String
+    @Binding var title: String
+    @Binding var content: String
     @Binding var geofence: Geofence?
     @Binding var weather: Weather?
 
@@ -19,9 +24,6 @@ struct EmotionLockView: View {
         VStack(spacing: 24) {
             // Header
             VStack(alignment: .leading, spacing: 8) {
-                Text("Spark")
-                    .font(BrandStyle.title)
-                    .foregroundColor(BrandStyle.accent)
                 Text("Emotion Trigger")
                     .font(BrandStyle.sectionTitle)
                     .foregroundColor(BrandStyle.textPrimary)
@@ -85,6 +87,7 @@ struct EmotionLockView: View {
 
                 // Skip
                 Button {
+                    selectedEmotion = nil
                     emotion = nil
                     saveEntryHere()
                     path.append(CreateFlowStep.finish)
